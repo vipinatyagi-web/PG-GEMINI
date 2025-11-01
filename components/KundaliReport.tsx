@@ -1,82 +1,131 @@
-import { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaDownload, FaShareAlt, FaStar, FaBriefcase, FaHeart, FaNotesMedical, FaLightbulb } from 'react-icons/fa';
-import ChatWidget from './ChatWidget';
-// A simple PDF generation utility (you would create this file)
-// import { generatePdf } from '@/lib/pdfGenerator'; 
+type Props = { data:any };
 
-const Section = ({ title, icon, children }: any) => {
-    const [isOpen, setIsOpen] = useState(true);
-    return (
-        <div className="bg-brand-bg/60 rounded-xl mb-4 overflow-hidden">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center p-4 text-left">
-                <div className="flex items-center gap-3">
-                    <div className="text-brand-gold text-xl">{icon}</div>
-                    <h3 className="text-xl font-bold">{title}</h3>
-                </div>
-                <motion.div animate={{ rotate: isOpen ? 0 : -90 }}>▼</motion.div>
-            </button>
-            {isOpen && <div className="p-4 pt-0 text-brand-gray">{children}</div>}
-        </div>
-    );
-};
+const SectionCard = ({ title, children }: any) => (
+  <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+    <div className="text-lg font-bold">{title}</div>
+    <div className="mt-2">{children}</div>
+  </div>
+);
 
-
-const KundaliReport = ({ data }: { data: any }) => {
-  const reportRef = useRef<HTMLDivElement>(null);
-
-  const handleDownload = () => {
-    alert("PDF Download functionality is being implemented!");
-    // You would call your PDF generation function here
-    // const { generatePdf } = await import('@/lib/pdfGenerator');
-    // generatePdf(reportRef.current, `PavitraGyaan_${data.meta.name}.pdf`);
-  };
-
-  const handleShare = () => {
-    const text = `Dekho meri AI-powered Kundali Pavitra Gyaan se! Tum bhi try karo.`;
-    const url = window.location.href;
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + '\n' + url)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  return (
-    <div className="animation-fade-in">
-        <div className="text-center mb-8 bg-brand-bg/60 p-6 rounded-2xl">
-            <h1 className="text-4xl font-bold">Kundali Phaladesh for <span className="text-brand-gold">{data.meta.name}</span></h1>
-            <p className="text-brand-gray mt-2">{data.summary.core_focus}</p>
-        </div>
-
-        <div className="flex justify-center gap-4 mb-8">
-            <button onClick={handleDownload} className="flex items-center gap-2 px-6 py-3 bg-brand-violet rounded-full font-semibold"><FaDownload /> Download PDF</button>
-            <button onClick={handleShare} className="flex items-center gap-2 px-6 py-3 bg-brand-violet rounded-full font-semibold"><FaShareAlt /> Share on WhatsApp</button>
-        </div>
-
-        <div ref={reportRef} className="p-2">
-            <Section title="Career" icon={<FaBriefcase />}>
-                <h4 className="font-bold text-lg text-white mb-2">{data.sections.career.headline}</h4>
-                <p className="mb-2">{data.sections.career.forensic}</p>
-                <div className="border-l-2 border-brand-gold pl-3 mt-3">
-                    <strong className="text-brand-light">Action Plan:</strong>
-                    <ul className="list-disc list-inside mt-1">
-                        <li><strong>Aaj:</strong> {data.sections.career.actions.today}</li>
-                        <li><strong>7 Din Mein:</strong> {data.sections.career.actions.seven_days}</li>
-                    </ul>
-                </div>
-            </Section>
-
-            <Section title="Love & Relationship" icon={<FaHeart />}>
-                 <h4 className="font-bold text-lg text-white mb-2">{data.sections.love.headline}</h4>
-                 <p className="mb-2">{data.sections.love.forensic}</p>
-            </Section>
-            
-            <Section title="Upaay (Remedies)" icon={<FaLightbulb />}>
-                <p>{data.remedies[0].name} - {data.remedies[0].reason} ({data.remedies[0].when})</p>
-            </Section>
-        </div>
-
-        <ChatWidget />
+export default function KundaliReport({ data }: Props){
+  const d = data||{};
+  const s = d.sections||{};
+  const line = (k:string,v:any)=>(
+    <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="text-brand-gray">{k}</div>
+      <div className="font-semibold">{v||'—'}</div>
     </div>
   );
-};
 
-export default KundaliReport;
+  return (
+    <div className="space-y-4">
+      <SectionCard title="Overview">
+        <div className="grid md:grid-cols-2 gap-3">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+            {line("Naam", d?.meta?.name)}
+            {line("DOB", d?.meta?.dob)}
+            {line("TOB", d?.meta?.tob)}
+            {line("Sthan", d?.meta?.location)}
+            {line("Lat/Lon", `${d?.meta?.lat}, ${d?.meta?.lon}`)}
+            {line("TZ (mins)", d?.meta?.tz_offset_minutes)}
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+            {line("Gender", d?.meta?.gender)}
+            {line("Rel. Status", d?.meta?.relationshipStatus)}
+            {line("Career Goal", d?.meta?.careerGoal)}
+            {line("Concern", d?.meta?.topConcern)}
+            {line("Question", d?.meta?.primary_question)}
+          </div>
+        </div>
+        <div className="mt-3 border-t border-white/10 pt-3">
+          <div className="inline-block rounded-full px-3 py-1 border border-brand-indigo text-xs bg-black/20">Seedhi Baat</div>
+          <div className="mt-2">{d?.summary?.tone} — {d?.summary?.core_focus}</div>
+          {d?.summary?.personalized_note && <p className="mt-2 text-brand-gray">{d.summary.personalized_note}</p>}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Grah Prabhav (Overall)">
+        <ul className="list-disc list-inside space-y-1 text-sm">
+          {Object.entries(d.grah_prabhav||{}).map(([k,v]:any)=> <li key={k}><b className="capitalize">{k.replace('_','/')}:</b> {v}</li>)}
+        </ul>
+      </SectionCard>
+
+      {/* Major Life Areas */}
+      {["career","money","love","health","family","education","travel","spiritual"].map((key:string)=> {
+        const sec:any = s[key]||{};
+        return (
+          <SectionCard key={key} title={sec.headline || key.toUpperCase()}>
+            {sec.indicators?.length>0 && (
+              <div className="mb-2 text-sm text-brand-gray">
+                {sec.indicators.map((it:string,i:number)=><div key={i}>• {it}</div>)}
+              </div>
+            )}
+            {sec.forensic && <p className="mt-1">{sec.forensic}</p>}
+            {sec.pinpoint?.length>0 && (
+              <div className="mt-2">
+                <div className="text-brand-gray text-sm mb-1">Exact Windows</div>
+                <ul className="list-disc list-inside">
+                  {sec.pinpoint.map((p:string,i:number)=><li key={i}>{p}</li>)}
+                </ul>
+              </div>
+            )}
+            {sec.actions && (
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>Aaj:</b> {sec.actions.today||'—'}</div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>7 din:</b> {sec.actions.seven_days||'—'}</div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>90 din:</b> {sec.actions.ninety_days||'—'}</div>
+              </div>
+            )}
+            {sec.confidence && <div className="text-xs mt-1 text-brand-gray">Confidence: {sec.confidence}</div>}
+          </SectionCard>
+        );
+      })}
+
+      <SectionCard title="Timeline (Next 90 days)">
+        <div className="grid md:grid-cols-2 gap-2 text-sm">
+          {Array.isArray(d.timeline) && d.timeline.map((w:any,i:number)=>(
+            <div key={i} className="rounded-lg border border-white/10 bg-white/5 p-2">
+              <div className="font-semibold">{w.label}</div>
+              <div className="text-brand-gray">{w.from} → {w.to}</div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <SectionCard title="Upaay">
+          <ul className="list-disc list-inside">
+            {(d.remedies||[]).map((r:any,i:number)=><li key={i}><b>{r.name}:</b> {r.reason} — <i>{r.when}</i></li>)}
+          </ul>
+        </SectionCard>
+        <SectionCard title="Lucky & Do/Don't">
+          <div className="text-sm">
+            <div><b>Lucky Number:</b> {(d.lucky?.number||[]).join(', ')||'—'}</div>
+            <div><b>Lucky Color:</b> {(d.lucky?.color||[]).join(', ')||'—'}</div>
+            <div><b>Lucky Day:</b> {(d.lucky?.day||[]).join(', ')||'—'}</div>
+            <div className="mt-2"><b>Do:</b> {(d.do_dont?.do||[]).join('; ')||'—'}</div>
+            <div><b>Don't:</b> {(d.do_dont?.dont||[]).join('; ')||'—'}</div>
+            <div className="text-xs text-brand-gray mt-1">{d.lucky?.stone_note}</div>
+          </div>
+        </SectionCard>
+      </div>
+
+      <SectionCard title="Action Plan">
+        <div className="grid md:grid-cols-3 gap-2 text-sm">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="font-semibold">Aaj</div>
+            <ul className="list-disc list-inside">{(d.action_plan?.today||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="font-semibold">7 Din</div>
+            <ul className="list-disc list-inside">{(d.action_plan?.seven_days||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="font-semibold">90 Din</div>
+            <ul className="list-disc list-inside">{(d.action_plan?.ninety_days||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
+  );
+}
