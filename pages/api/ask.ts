@@ -6,31 +6,30 @@ export default async function handler(req, res) {
 
   try {
     const { message } = req.body || {};
-
     if (!message) {
       return res.status(400).json({ error: 'Message missing in request body.' });
     }
 
     const lowerMsg = message.toLowerCase();
 
-    // Simple fallback logic (Hinglish tone)
-    let reply = "Sab theek ho jayega. Apna focus banaye rakhiye 🙏";
+    // Simple Hinglish logic (fallback)
+    let reply = "Sab theek ho jayega 🙏 Apna focus banaye rakhiye.";
     if (lowerMsg.includes('career')) {
-      reply = "Career mein consistency aur network dono zaruri hain. Mehnat aur patience se naya mauka milega.";
+      reply = "Career mein mehnat karein, consistency rakhein. Naye mauke jaldi milenge 💼";
     } else if (lowerMsg.includes('love')) {
-      reply = "Dil se baat karein aur samjhauta ka mool mantra yaad rakhein 💫";
+      reply = "Rishton mein communication aur patience sabse bada mantra hai 💖";
     } else if (lowerMsg.includes('money') || lowerMsg.includes('finance')) {
-      reply = "Kharch kam, investment badhayein. 70-20-10 rule follow karein 💰";
+      reply = "Paise ko sambhalke kharch karein, aur investment discipline banayein 💰";
     } else if (lowerMsg.includes('health')) {
-      reply = "Apni neend aur diet pe dhyaan dein, body aur mind dono balance me rahenge 🌿";
+      reply = "Health pe dhyaan dein — neend aur hydration par focus karein 🌿";
     } else if (lowerMsg.includes('stress') || lowerMsg.includes('tension')) {
-      reply = "5-min deep breathing karein aur Surya ko jal chadhayein ☀️";
+      reply = "Deep breathing karein, Om ka jap karein aur Surya ko jal chadhayein ☀️";
     }
 
-    await new Promise(resolve => setTimeout(resolve, 600)); // thoda human delay
+    await new Promise(resolve => setTimeout(resolve, 500)); // simulate realistic delay
 
     return res.status(200).json({ reply });
-  } catch (err) {
-    return res.status(500).json({ error: err.message || 'Internal error' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
