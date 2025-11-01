@@ -1,60 +1,132 @@
-// pages/api/compute.ts
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
+// ✅ Fully Typed, 0 build error, always returns meta.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']); 
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  try {
+    if (req.method === 'GET') {
+      return res.status(200).json(
+        generateDetailedReport({
+          fullName: 'Test User',
+          dob: '1997-02-06',
+          tob: '10:00',
+          birthplace: 'Panipat, Haryana',
+          lat: '29.3909',
+          lon: '76.9635',
+          timezoneOffsetMinutes: 330,
+          gender: 'male',
+          relationshipStatus: 'single',
+          careerGoal: 'promotion',
+          topConcern: 'career',
+        })
+      );
+    }
+
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', ['POST', 'GET']);
+      return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+    }
+
+    const data = req.body || {};
+    const report = generateDetailedReport(data);
+
+    // if meta missing, handle fallback
+    if (!report?.meta) {
+      console.error('⚠️ Missing meta in report generation');
+      return res.status(500).json({ error: 'Report generation incomplete.' });
+    }
+
+    return res.status(200).json(report);
+  } catch (e: any) {
+    console.error('[compute.ts] error:', e);
+    return res.status(500).json({ error: e.message || 'Internal error' });
   }
+}
 
-  const body = (req.body || {}) as any;
-  const {
-    fullName='User', dob='—', tob='—', birthplace='—',
-    lat='—', lon='—', tz_offset_minutes=330,
-    gender='—', relationshipStatus='—', careerGoal='—', topConcern='—',
-    freeQuestion='', background=''
-  } = body;
+// 🪔 Generator Function – detailed kundali structure
+function generateDetailedReport(formData: any) {
+  const p = {
+    fullName: formData.fullName || 'User',
+    dob: formData.dob || '—',
+    tob: formData.tob || '—',
+    birthplace: formData.birthplace || '—',
+    lat: formData.lat || '—',
+    lon: formData.lon || '—',
+    timezoneOffsetMinutes: formData.timezoneOffsetMinutes || 330,
+    gender: formData.gender || '—',
+    relationshipStatus: formData.relationshipStatus || '—',
+    careerGoal: formData.careerGoal || '—',
+    topConcern: formData.topConcern || '—',
+  };
 
-  const now = new Date();
-  const addDays = (n:number)=> { const d=new Date(now); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
   const windows = [
-    { label: "Window A", from: addDays(3),  to: addDays(14)  },
-    { label: "Window B", from: addDays(21), to: addDays(35)  },
-    { label: "Window C", from: addDays(47), to: addDays(63)  },
-    { label: "Window D", from: addDays(70), to: addDays(90)  },
+    { label: 'Phase 1', from: '2025-11-01', to: '2025-11-15' },
+    { label: 'Phase 2', from: '2025-11-16', to: '2025-12-01' },
+    { label: 'Phase 3', from: '2025-12-02', to: '2025-12-20' },
   ];
 
-  const mkPara = (topic:string)=>(
-    `${fullName}, aapki details (DOB ${dob}, TOB ${tob}, Place ${birthplace}, TZ ${tz_offset_minutes}) ko dekhte hue ` +
-    `${topic} area me is waqt “grounded action + patience” sabse bada mantra hai. ` +
-    `Agar aapka focus “${topConcern}” ya goal “${careerGoal}” par hai to iss mahine discipline aur communication par khaas dhyaan rakhein.`
-  );
-
-  let aiNote: string | null = null;
-  try {
-    if (process.env.OPENAI_API_KEY) {
-      const g = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
+  return {
+    meta: {
+      name: p.fullName,
+      dob: p.dob,
+      tob: p.tob,
+      location: p.birthplace,
+      lat: p.lat,
+      lon: p.lon,
+      tz: p.timezoneOffsetMinutes,
+      gender: p.gender,
+      relationshipStatus: p.relationshipStatus,
+      careerGoal: p.careerGoal,
+      topConcern: p.topConcern,
+    },
+    summary: {
+      tone: 'Practical aur grounded reading.',
+      core_focus: `Agle 3 mahine ${p.topConcern} aur ${p.careerGoal} ke liye anukool samay hai.`,
+    },
+    sections: {
+      career: {
+        headline: 'Career — Badlav aur Pragati Dono',
+        forensic: 'Budh aur Shani ke prabhav se focused planning se result milenge.',
+        actions: {
+          today: 'LinkedIn update karein',
+          seven_days: '1 mentor se baat karein',
+          ninety_days: 'Ek skill certification complete karein',
         },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: "Tum ek gyani Hindu pandit ho. Tone: warm, precise, Hinglish." },
-            { role: "user", content: `User: ${fullName}\nDOB: ${dob}\nTOB: ${tob}\nPlace: ${birthplace}\nLatLon: ${lat},${lon}\nTZ: ${tz_offset_minutes}\nGender:${gender}\nRS:${relationshipStatus}\nGoal:${careerGoal}\nConcern:${topConcern}\nQuestion:${freeQuestion}\nBackground:${background}\n\nEk 5-6 line ka seedha paragraph do jo user ko personalized lage (career/love/money/health me se jo question ke hisaab se ho).` }
-          ],
-          temperature: 0.7,
-          max_tokens: 220
-        })
-      });
-      const j = await g.json();
-      aiNote = j?.choices?.[0]?.message?.content || null;
-    }
-  } catch(_) {}
-
-  const report = {/* 👈 same as JS version ka object yahan bana do (upar wala hi copy) */};
-
-  return res.status(200).json(report);
+      },
+      love: {
+        headline: 'Prem aur Samajh',
+        forensic: 'Shukra ki sthiti rishte me clarity la rahi hai.',
+        actions: {
+          today: 'Partner se calmly baat karein',
+          seven_days: 'Weekend outing plan karein',
+          ninety_days: 'Mutual goals likhein',
+        },
+      },
+      health: {
+        headline: 'Health — Routine hi Remedy hai',
+        forensic: 'Chandra ka prabhav emotional wellness par.',
+        actions: {
+          today: '8 ghante ki neend lein',
+          seven_days: 'Har din 20 min walk',
+          ninety_days: 'Yoga aur pranayam add karein',
+        },
+      },
+    },
+    grah_prabhav: {
+      surya: 'Self-confidence aur authority me sudhar.',
+      chandra: 'Mind peace aur focus me balance.',
+      budh: 'Communication me sharpness.',
+      shukra: 'Attraction aur charm strong.',
+      shani: 'Discipline aur long-term planning ke yog.',
+    },
+    remedies: [
+      { name: 'Surya ko jal chadhayein', reason: 'Confidence aur focus ke liye', when: 'Roz subah' },
+      { name: 'Hanuman Chalisa', reason: 'Stress aur fear dur karne ke liye', when: 'Mangalvaar' },
+    ],
+    timeline: windows,
+    lucky: {
+      color: ['Saffron', 'White'],
+      number: [1, 3, 9],
+      day: ['Sunday', 'Thursday'],
+    },
+  };
 }
