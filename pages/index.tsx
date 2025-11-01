@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-
-// YEH IMPORT SECTION SABSE ZAROORI HAI
 import FormWizard from '@/components/FormWizard';
 import KundaliReport from '@/components/KundaliReport';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
 import { AnimatePresence, motion } from 'framer-motion';
 
 const LoadingSpinner = () => (
@@ -19,9 +16,9 @@ const LoadingSpinner = () => (
 );
 const ErrorMessage = ({ message, onReset }: { message: string, onReset: () => void }) => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
-      <h2 className="text-2xl font-bold text-red-500">Ek Samasya Aa Gayi Hai</h2>
-      <p className="text-brand-gray mt-2 mb-6">{message}</p>
-      <button onClick={onReset} className="px-8 py-3 bg-brand-gold text-brand-dark font-bold rounded-full hover:bg-yellow-400 transition-all">Phir Se Prayaas Karein</button>
+    <h2 className="text-2xl font-bold text-red-500">Ek Samasya Aa Gayi Hai</h2>
+    <p className="text-brand-gray mt-2 mb-6">{message}</p>
+    <button onClick={onReset} className="px-8 py-3 bg-brand-gold text-brand-dark font-bold rounded-full hover:bg-yellow-400 transition-all">Phir Se Prayaas Karein</button>
   </div>
 );
 
@@ -46,7 +43,7 @@ export default function Home() {
     <>
       <Head>
         <title>Pavitra Gyaan - Aapke Bhavishya Ka Darpan</title>
-        <meta name="description" content="AI-powered Kundali and Horoscope generator for Indian users in Hinglish." />
+        <meta name="description" content="AI-powered Kundali and Horoscope generator." />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo.svg" />
