@@ -1,31 +1,33 @@
-export default async function handler(req, res) {
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { query } = req.query;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Google API key missing.' });
+    return res.status(500).json({ error: 'Google API key server par nahi mili.' });
   }
 
   try {
-    const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
-    const geoRes = await fetch(geoUrl);
-    const geoData = await geoRes.json();
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query as string)}&key=${apiKey}`;
+    const geoResponse = await fetch(geocodeUrl);
+    const geoData = await geoResponse.json();
 
-    if (geoData.status !== 'OK' || !geoData.results?.length) {
-      throw new Error('Jagah nahi mili.');
+    if (geoData.status !== 'OK' || !geoData.results[0]) {
+      throw new Error('Jagah nahi mili. Kripya dobara check karein.');
     }
 
-    const loc = geoData.results[0].geometry.location;
+    const location = geoData.results[0].geometry.location;
+    // Defaulting to IST for simplicity as Timezone API can be complex
+    const timezoneOffsetMinutes = 330; 
 
-    // Defaulting to IST = +5:30 (330 minutes)
     res.status(200).json({
-      lat: loc.lat,
-      lon: loc.lng,
-      timezoneOffsetMinutes: 330,
-      address: geoData.results[0].formatted_address
+      lat: location.lat,
+      lon: location.lng,
+      timezoneOffsetMinutes,
     });
 
-  } catch (err) {
-    res.status(500).json({ error: err.message || 'Unknown error' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Location data prapt karne mein विफल.' });
   }
 }
