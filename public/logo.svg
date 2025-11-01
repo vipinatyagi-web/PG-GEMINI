@@ -5,14 +5,5 @@
       <stop offset="100%" style="stop-color:#b98bff; stop-opacity:1" />
     </linearGradient>
   </defs>
-  <text 
-    x="50" 
-    y="70" 
-    font-family="Arial, sans-serif" 
-    font-size="70" 
-    fill="url(#brandGradient)" 
-    text-anchor="middle"
-    font-weight="bold">
-    ॐ
-  </text>
+  <text x="50" y="70" font-family="Arial, sans-serif" font-size="70" fill="url(#brandGradient)" text-anchor="middle" font-weight="bold">ॐ</text>
 </svg>
