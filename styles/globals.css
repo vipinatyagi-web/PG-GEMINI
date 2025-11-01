@@ -1,15 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-body {
-  background-color: #0a091e;
-  color: #f0e6ff;
-}
-
-/* Custom scrollbar */
+body { background-color: #0a091e; color: #f0e6ff; }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #0a091e; }
 ::-webkit-scrollbar-thumb { background: #6f42c1; border-radius: 10px; }
