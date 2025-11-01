@@ -1,3 +1,4 @@
+// components/KundaliReport.tsx
 type Props = { data:any };
 
 const SectionCard = ({ title, children }: any) => (
@@ -8,14 +9,29 @@ const SectionCard = ({ title, children }: any) => (
 );
 
 export default function KundaliReport({ data }: Props){
-  const d = data||{};
-  const s = d.sections||{};
+  const d = data || {};
+  const s = d.sections || {};
   const line = (k:string,v:any)=>(
     <div className="grid grid-cols-2 gap-2 text-sm">
       <div className="text-brand-gray">{k}</div>
-      <div className="font-semibold">{v||'—'}</div>
+      <div className="font-semibold break-words">{v ?? '—'}</div>
     </div>
   );
+
+  // Safety: agar meta hi nahi aayi to raw JSON dikha do (debug)
+  if (!d.meta) {
+    return (
+      <SectionCard title="Debug: Raw Report">
+        <pre className="text-xs whitespace-pre-wrap break-all">
+{JSON.stringify(d, null, 2)}
+        </pre>
+        <div className="text-red-400 mt-2 text-sm">
+          ⚠️ Report meta missing hai. Compute API ko check karo — ya to empty object aa raha hai,
+          ya keys mismatch. (Ensure pages/api/compute.js active hai)
+        </div>
+      </SectionCard>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -38,7 +54,7 @@ export default function KundaliReport({ data }: Props){
           </div>
         </div>
         <div className="mt-3 border-t border-white/10 pt-3">
-          <div className="inline-block rounded-full px-3 py-1 border border-brand-indigo text-xs bg-black/20">Seedhi Baat</div>
+          <div className="inline-block rounded-full px-3 py-1 border border-brand-violet text-xs bg-black/20">Seedhi Baat</div>
           <div className="mt-2">{d?.summary?.tone} — {d?.summary?.core_focus}</div>
           {d?.summary?.personalized_note && <p className="mt-2 text-brand-gray">{d.summary.personalized_note}</p>}
         </div>
@@ -46,13 +62,14 @@ export default function KundaliReport({ data }: Props){
 
       <SectionCard title="Grah Prabhav (Overall)">
         <ul className="list-disc list-inside space-y-1 text-sm">
-          {Object.entries(d.grah_prabhav||{}).map(([k,v]:any)=> <li key={k}><b className="capitalize">{k.replace('_','/')}:</b> {v}</li>)}
+          {Object.entries(d.grah_prabhav || {}).map(([k,v]:any)=> (
+            <li key={k}><b className="capitalize">{k.replace('_','/')}:</b> {v}</li>
+          ))}
         </ul>
       </SectionCard>
 
-      {/* Major Life Areas */}
       {["career","money","love","health","family","education","travel","spiritual"].map((key:string)=> {
-        const sec:any = s[key]||{};
+        const sec:any = s[key] || {};
         return (
           <SectionCard key={key} title={sec.headline || key.toUpperCase()}>
             {sec.indicators?.length>0 && (
@@ -71,9 +88,9 @@ export default function KundaliReport({ data }: Props){
             )}
             {sec.actions && (
               <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>Aaj:</b> {sec.actions.today||'—'}</div>
-                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>7 din:</b> {sec.actions.seven_days||'—'}</div>
-                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>90 din:</b> {sec.actions.ninety_days||'—'}</div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>Aaj:</b> {sec.actions.today ?? '—'}</div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>7 din:</b> {sec.actions.seven_days ?? '—'}</div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-2"><b>90 din:</b> {sec.actions.ninety_days ?? '—'}</div>
               </div>
             )}
             {sec.confidence && <div className="text-xs mt-1 text-brand-gray">Confidence: {sec.confidence}</div>}
@@ -83,7 +100,7 @@ export default function KundaliReport({ data }: Props){
 
       <SectionCard title="Timeline (Next 90 days)">
         <div className="grid md:grid-cols-2 gap-2 text-sm">
-          {Array.isArray(d.timeline) && d.timeline.map((w:any,i:number)=>(
+          {(d.timeline || []).map((w:any,i:number)=>(
             <div key={i} className="rounded-lg border border-white/10 bg-white/5 p-2">
               <div className="font-semibold">{w.label}</div>
               <div className="text-brand-gray">{w.from} → {w.to}</div>
@@ -100,11 +117,11 @@ export default function KundaliReport({ data }: Props){
         </SectionCard>
         <SectionCard title="Lucky & Do/Don't">
           <div className="text-sm">
-            <div><b>Lucky Number:</b> {(d.lucky?.number||[]).join(', ')||'—'}</div>
-            <div><b>Lucky Color:</b> {(d.lucky?.color||[]).join(', ')||'—'}</div>
-            <div><b>Lucky Day:</b> {(d.lucky?.day||[]).join(', ')||'—'}</div>
-            <div className="mt-2"><b>Do:</b> {(d.do_dont?.do||[]).join('; ')||'—'}</div>
-            <div><b>Don't:</b> {(d.do_dont?.dont||[]).join('; ')||'—'}</div>
+            <div><b>Lucky Number:</b> {(d.lucky?.number||[]).join(', ') || '—'}</div>
+            <div><b>Lucky Color:</b> {(d.lucky?.color||[]).join(', ') || '—'}</div>
+            <div><b>Lucky Day:</b> {(d.lucky?.day||[]).join(', ') || '—'}</div>
+            <div className="mt-2"><b>Do:</b> {(d.do_dont?.do||[]).join('; ') || '—'}</div>
+            <div><b>Don't:</b> {(d.do_dont?.dont||[]).join('; ') || '—'}</div>
             <div className="text-xs text-brand-gray mt-1">{d.lucky?.stone_note}</div>
           </div>
         </SectionCard>
